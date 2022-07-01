@@ -34,7 +34,7 @@ struct Terms {
 struct DealState {
     bool ownerCancelFulfill;
     bool possessorCancelFulfill;
-    uint40 fulfilmentRequestedTimestamp;
+    uint40 fulfillmentRequestedTimestamp;
     // The creator of the deal, presumed possessor of the item
     // described by ownershipToken described in Terms
     address possessor;
@@ -77,7 +77,7 @@ contract Controller {
             revert MustBeCreatorAndOwnershipTokenOwner();
         }
 
-        if (dealState[k].fulfilmentRequestedTimestamp != 0) {
+        if (dealState[k].fulfillmentRequestedTimestamp != 0) {
             // tbd if this should be allowed
             revert FulfillmentInProgress();
         }
@@ -104,13 +104,15 @@ contract Controller {
             revert NotFound();
         }
 
-        if (dealState[k].fulfilmentRequestedTimestamp != 0) {
+        if (dealState[k].fulfillmentRequestedTimestamp != 0) {
             revert FulfillmentInProgress();
         }
 
         if (msg.sender != terms.ownershipToken.token.ownerOf(terms.ownershipToken.id)) {
             revert MustBeOwnershipTokenOwner();
         }
+
+        dealState[k].fulfillmentRequestedTimestamp = uint40(block.timestamp);
 
         terms.fulfillmentStake.token.safeTransferFrom(
             msg.sender,
@@ -157,7 +159,7 @@ contract Controller {
             revert NotFound();
         }
 
-        if (terms.fulfillmentTime + dealState[k].fulfilmentRequestedTimestamp < block.timestamp) {
+        if (terms.fulfillmentTime + dealState[k].fulfillmentRequestedTimestamp < block.timestamp) {
             revert FulfilmentNotExpired();
         }
 
@@ -196,7 +198,7 @@ contract Controller {
 
         DealState storage deal = dealState[k];
         
-        if (deal.fulfilmentRequestedTimestamp == 0) {
+        if (deal.fulfillmentRequestedTimestamp == 0) {
             revert FulfillmentInProgress();
         }
 
