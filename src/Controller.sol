@@ -123,8 +123,6 @@ contract Controller {
         emit RequestFulfillment(k, data);
     }
 
-    error OnlyOwner();
-
     function markFulfilled(Terms calldata terms) external {
         bytes32 k = termsKey(terms);
 
